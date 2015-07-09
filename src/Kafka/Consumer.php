@@ -109,7 +109,7 @@ class Consumer
      * set send messages
      *
      * @access public
-     * @return void
+     * @return Consumer
      */
     public static function getInstance($hostList, $timeout = null)
     {

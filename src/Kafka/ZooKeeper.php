@@ -15,21 +15,19 @@
 namespace Kafka;
 
 /**
-+------------------------------------------------------------------------------
-* Kafka protocol since Kafka v0.8
-+------------------------------------------------------------------------------
-*
-* @package
-* @version $_SWANBR_VERSION_$
-* @copyright Copyleft
-* @author $_SWANBR_AUTHOR_$
-+------------------------------------------------------------------------------
-*/
+ * +------------------------------------------------------------------------------
+ * Kafka protocol since Kafka v0.8
+ * +------------------------------------------------------------------------------
+ *
+ * @package
+ * @version $_SWANBR_VERSION_$
+ * @copyright Copyleft
+ * @author $_SWANBR_AUTHOR_$
+ * +------------------------------------------------------------------------------
+ */
 
 class ZooKeeper
 {
-    // {{{ consts
-
     /**
      * get all broker
      */
@@ -65,9 +63,6 @@ class ZooKeeper
      */
     const PARTITION_OWNER = '/consumers/%s/owners/%s/%d';
 
-    // }}}
-    // {{{ members
-
     /**
      * zookeeper
      *
@@ -76,27 +71,30 @@ class ZooKeeper
      */
     private $zookeeper = null;
 
-    // }}}
-    // {{{ functions
-    // {{{ public function __construct()
+    /**
+     * zookeeper base path
+     *
+     * @var string
+     */
+    private $base_path = '';
 
     /**
      * __construct
      *
      * @access public
-     * @return void
+     * @param $hostList
+     * @param null $timeout
+     * @param string $base_path
      */
-    public function __construct($hostList, $timeout = null)
+    public function __construct($hostList, $timeout = null, $base_path = '')
     {
         if (!is_null($timeout) && is_numeric($timeout)) {
             $this->zookeeper = new \ZooKeeper($hostList, null, $timeout);
         } else {
             $this->zookeeper = new \Zookeeper($hostList);
         }
+        $this->base_path = $base_path;
     }
-
-    // }}}
-    // {{{ public function listBrokers()
 
     /**
      * get broker list using zookeeper
@@ -107,7 +105,8 @@ class ZooKeeper
     public function listBrokers()
     {
         $result = array();
-        $lists = $this->zookeeper->getChildren(self::BROKER_PATH);
+        $broker_path = $this->base_path . DIRECTORY_SEPARATOR .self::BROKER_PATH;
+        $lists = $this->zookeeper->getChildren($broker_path);
         if (!empty($lists)) {
             foreach ($lists as $brokerId) {
                 $brokerDetail = $this->getBrokerDetail($brokerId);
@@ -121,20 +120,18 @@ class ZooKeeper
         return $result;
     }
 
-    // }}}
-    // {{{ public function getBrokerDetail()
-
     /**
      * get broker detail
      *
      * @param integer $brokerId
      * @access public
-     * @return void
+     * @return array|boolean
      */
     public function getBrokerDetail($brokerId)
     {
         $result = array();
-        $path = sprintf(self::BROKER_DETAIL_PATH, (int) $brokerId);
+        $broker_detail_path = $this->base_path . DIRECTORY_SEPARATOR .self::BROKER_DETAIL_PATH;
+        $path = sprintf($broker_detail_path, (int)$brokerId);
         if ($this->zookeeper->exists($path)) {
             $result = $this->zookeeper->get($path);
             if (!$result) {
@@ -146,21 +143,19 @@ class ZooKeeper
 
         return $result;
     }
-
-    // }}}
-    // {{{ public function getTopicDetail()
 
     /**
      * get topic detail
      *
      * @param string $topicName
      * @access public
-     * @return void
+     * @return array|boolean
      */
     public function getTopicDetail($topicName)
     {
         $result = array();
-        $path = sprintf(self::TOPIC_PATCH, (string) $topicName);
+        $topic_patch = $this->base_path . DIRECTORY_SEPARATOR . self::TOPIC_PATCH;
+        $path = sprintf($topic_patch, (string)$topicName);
         if ($this->zookeeper->exists($path)) {
             $result = $this->zookeeper->get($path);
             if (!$result) {
@@ -171,9 +166,6 @@ class ZooKeeper
 
         return $result;
     }
-
-    // }}}
-    // {{{ public function getPartitionState()
 
     /**
      * get partition state
@@ -181,12 +173,13 @@ class ZooKeeper
      * @param string $topicName
      * @param integer $partitionId
      * @access public
-     * @return void
+     * @return array|boolean
      */
     public function getPartitionState($topicName, $partitionId = 0)
     {
         $result = array();
-        $path = sprintf(self::PARTITION_STATE, (string) $topicName, (int) $partitionId);
+        $partition_state = $this->base_path . DIRECTORY_SEPARATOR . self::PARTITION_STATE;
+        $path = sprintf($partition_state, (string)$topicName, (int)$partitionId);
         if ($this->zookeeper->exists($path)) {
             $result = $this->zookeeper->get($path);
             if (!$result) {
@@ -198,16 +191,14 @@ class ZooKeeper
         return $result;
     }
 
-    // }}}
-    // {{{ public function registerConsumer()
-
     /**
      * register consumer
      *
-     * @param string $topicName
-     * @param integer $partitionId
+     * @param $groupId
+     * @param $consumerId
+     * @param array $topics
+     * @return array|bool
      * @access public
-     * @return void
      */
     public function registerConsumer($groupId, $consumerId, $topics = array())
     {
@@ -215,7 +206,8 @@ class ZooKeeper
             return true;
         }
 
-        $path = sprintf(self::REG_CONSUMER, (string) $groupId, (string) $consumerId);
+        $reg_consumer = $this->base_path . DIRECTORY_SEPARATOR . self::REG_CONSUMER;
+        $path = sprintf($reg_consumer, (string)$groupId, (string)$consumerId);
         $subData = array();
         foreach ($topics as $topic) {
             $subData[$topic] = 1;
@@ -233,28 +225,23 @@ class ZooKeeper
         }
     }
 
-    // }}}
-    // {{{ public function listConsumer()
-
     /**
      * list consumer
      *
      * @param string $groupId
      * @access public
-     * @return void
+     * @return array|boolean
      */
     public function listConsumer($groupId)
     {
-        $path = sprintf(self::LIST_CONSUMER, (string) $groupId);
+        $list_consumer = $this->base_path . DIRECTORY_SEPARATOR . self::LIST_CONSUMER;
+        $path = sprintf($list_consumer, (string)$groupId);
         if (!$this->zookeeper->exists($path)) {
             return array();
         } else {
             return $this->zookeeper->getChildren($path);
         }
     }
-
-    // }}}
-    // {{{ public function getConsumersPerTopic()
 
     /**
      * get consumer per topic
@@ -272,7 +259,8 @@ class ZooKeeper
 
         $topics = array();
         foreach ($consumers as $consumerId) {
-            $path = sprintf(self::REG_CONSUMER, (string) $groupId, (string) $consumerId);
+            $reg_consumer = $this->base_path . DIRECTORY_SEPARATOR . self::REG_CONSUMER;
+            $path = sprintf($reg_consumer, (string)$groupId, (string)$consumerId);
             if (!$this->zookeeper->exists($path)) {
                 continue;
             }
@@ -288,9 +276,6 @@ class ZooKeeper
         return $topics;
     }
 
-    // }}}
-    // {{{ public function addPartitionOwner()
-
     /**
      * add partition owner
      *
@@ -303,7 +288,8 @@ class ZooKeeper
      */
     public function addPartitionOwner($groupId, $topicName, $partitionId, $consumerId)
     {
-        $path = sprintf(self::PARTITION_OWNER, (string) $groupId, $topicName, (string) $partitionId);
+        $partition_owner = $this->base_path . DIRECTORY_SEPARATOR . self::PARTITION_OWNER;
+        $path = sprintf($partition_owner, (string)$groupId, $topicName, (string)$partitionId);
         if (!$this->zookeeper->exists($path)) {
             $this->makeZkPath($path);
             $this->makeZkNode($path, $consumerId);
@@ -312,14 +298,11 @@ class ZooKeeper
         }
     }
 
-    // }}}
-    // {{{ protected function makeZkPath()
-
     /**
      * Equivalent of "mkdir -p" on ZooKeeper
      *
-     * @param string $path  The path to the node
-     * @param mixed  $value The value to assign to each new node along the path
+     * @param string $path The path to the node
+     * @param mixed $value The value to assign to each new node along the path
      *
      * @return bool
      */
@@ -336,14 +319,11 @@ class ZooKeeper
         }
     }
 
-    // }}}
-    // {{{ protected function makeZkNode()
-
     /**
      * Create a node on ZooKeeper at the given path
      *
-     * @param string $path  The path to the node
-     * @param mixed  $value The value to assign to the new node
+     * @param string $path The path to the node
+     * @param mixed $value The value to assign to the new node
      *
      * @return bool
      */
@@ -351,14 +331,12 @@ class ZooKeeper
     {
         $params = array(
             array(
-                'perms'  => \Zookeeper::PERM_ALL,
+                'perms' => \Zookeeper::PERM_ALL,
                 'scheme' => 'world',
-                'id'     => 'anyone',
+                'id' => 'anyone',
             )
         );
+
         return $this->zookeeper->create($path, $value, $params);
     }
-
-    // }}}
-    // }}}
 }

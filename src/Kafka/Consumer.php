@@ -28,10 +28,6 @@ namespace Kafka;
 
 class Consumer
 {
-    // {{{ consts
-    // }}}
-    // {{{ members
-
     /**
      * client
      *
@@ -101,10 +97,6 @@ class Consumer
      */
     private $offsetStrategy = \Kafka\Offset::DEFAULT_EARLY;
 
-    // }}}
-    // {{{ functions
-    // {{{ public function static getInstance()
-
     /**
      * set send messages
      *
@@ -120,23 +112,19 @@ class Consumer
         return self::$instance;
     }
 
-    // }}}
-    // {{{ private function __construct()
-
     /**
      * __construct
      *
      * @access public
-     * @return void
+     * @param $hostList
+     * @param null $timeout
+     * @param string $zookeeper_base_path
      */
-    private function __construct($hostList, $timeout = null)
+    private function __construct($hostList, $timeout = null, $zookeeper_base_path = '')
     {
-        $zookeeper = new \Kafka\ZooKeeper($hostList, $timeout);
+        $zookeeper = new \Kafka\ZooKeeper($hostList, $timeout, $zookeeper_base_path);
         $this->client = new \Kafka\Client($zookeeper);
     }
-
-    // }}}
-    // {{{ public function clearPayload()
 
     /**
      * clearPayload
@@ -149,14 +137,11 @@ class Consumer
         $this->payload = array();
     }
 
-    // }}}
-    // {{{ public function setTopic()
-
     /**
      * set topic name
      *
      * @access public
-     * @return void
+     * @return Consumer
      */
     public function setTopic($topicName, $defaultOffset = null)
     {
@@ -173,14 +158,11 @@ class Consumer
         return $this;
     }
 
-    // }}}
-    // {{{ public function setPartition()
-
     /**
      * set topic partition
      *
      * @access public
-     * @return void
+     * @return Consumer
      */
     public function setPartition($topicName, $partitionId = 0, $offset = null)
     {
@@ -198,9 +180,6 @@ class Consumer
         return $this;
     }
 
-    // }}}
-    // {{{ public function setFromOffset()
-
     /**
      * set whether starting offset fetch
      *
@@ -212,9 +191,6 @@ class Consumer
     {
         $this->fromOffset = (boolean) $fromOffset;
     }
-
-    // }}}
-    // {{{ public function setMaxBytes()
 
     /**
      * set fetch message max bytes
@@ -228,15 +204,12 @@ class Consumer
         $this->maxSize = $maxSize;
     }
 
-    // }}}
-    // {{{ public function setGroup()
-
     /**
      * set consumer group
      *
      * @param string $group
      * @access public
-     * @return void
+     * @return Consumer
      */
     public function setGroup($group)
     {
@@ -244,14 +217,11 @@ class Consumer
         return $this;
     }
 
-    // }}}
-    // {{{ public function fetch()
-
     /**
      * fetch message to broker
      *
      * @access public
-     * @return void
+     * @return boolean|array
      */
     public function fetch()
     {
@@ -260,7 +230,6 @@ class Consumer
             return false;
         }
 
-        $responseData = array();
         $streams = array();
         foreach ($data as $host => $requestData) {
             $connArr = $this->client->getStream($host);
@@ -288,22 +257,17 @@ class Consumer
         return $fetch;
     }
 
-    // }}}
-    // {{{ public function getClient()
 
     /**
      * get client object
      *
      * @access public
-     * @return void
+     * @return Client
      */
     public function getClient()
     {
         return $this->client;
     }
-
-    // }}}
-    // {{{ private function _formatPayload()
 
     /**
      * format payload array
@@ -356,13 +320,11 @@ class Consumer
      * const EARLIEST_OFFSET = -2;
      * const DEFAULT_LAST  = -2;
      * const DEFAULT_EARLY = -1;
-     * @param type $offsetStrategy
+     * @param $offsetStrategy
      */
     public function setOffsetStrategy($offsetStrategy)
     {
         $this->offsetStrategy = $offsetStrategy;
     }
 
-    // }}}
-    // }}}
 }

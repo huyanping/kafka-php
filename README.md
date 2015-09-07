@@ -481,3 +481,4 @@ $result = $decoder->fetchOffsetResponse();
 var_dump($result);
 
 ```
+

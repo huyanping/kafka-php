@@ -1,11 +1,12 @@
 {
-    "name": "nmred/kafka-php",
+    "name": "jenner/kafka-php",
     "description": "Kafka client for php",
     "type": "library",
     "keywords": [
         "Client",
         "Kafka"
     ],
+  	"version": "0.2",
     "homepage": "http://wwww.swanlinux.net",
     "license": "BSD-3-Clause",
     "require": {

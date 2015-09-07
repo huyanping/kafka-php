@@ -101,12 +101,15 @@ class Consumer
      * set send messages
      *
      * @access public
+     * @param $hostList
+     * @param null $timeout
+     * @param string $zookeeper_base_path
      * @return Consumer
      */
-    public static function getInstance($hostList, $timeout = null)
+    public static function getInstance($hostList, $timeout = null, $zookeeper_base_path = '')
     {
         if (is_null(self::$instance)) {
-            self::$instance = new self($hostList, $timeout);
+            self::$instance = new self($hostList, $timeout, $zookeeper_base_path);
         }
 
         return self::$instance;

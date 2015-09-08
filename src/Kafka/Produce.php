@@ -98,10 +98,10 @@ class Produce
      * @access public
      * @return void
      */
-    public static function getInstance($hostList, $timeout)
+    public static function getInstance($hostList, $timeout, $base_path = '')
     {
         if (is_null(self::$instance)) {
-            self::$instance = new self($hostList, $timeout);
+            self::$instance = new self($hostList, $timeout, $base_path);
         }
 
         return self::$instance;
@@ -116,9 +116,9 @@ class Produce
      * @access public
      * @return void
      */
-    public function __construct($hostList, $timeout = null)
+    public function __construct($hostList, $timeout = null, $base_path = '')
     {
-        $zookeeper = new \Kafka\ZooKeeper($hostList, $timeout);
+        $zookeeper = new \Kafka\ZooKeeper($hostList, $timeout, $base_path);
         $this->client = new \Kafka\Client($zookeeper);
     }
 

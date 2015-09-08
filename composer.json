@@ -6,7 +6,7 @@
         "Client",
         "Kafka"
     ],
-  	"version": "0.2.1",
+  	"version": "0.2.2",
     "homepage": "http://wwww.swanlinux.net",
     "license": "BSD-3-Clause",
     "require": {
